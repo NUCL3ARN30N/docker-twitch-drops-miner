@@ -14,6 +14,13 @@ A containerized version of Twitch Drops Miner with a native WebUI for easy manag
 
 ## Quick Start
 
+**Before you run the container**, create the host directories and hand them to uid/gid 1000 (the user the container runs as). Skipping this is the most common cause of the app looking like it crashes right after you enter the Twitch login code -- it actually fails with a silent `PermissionError` writing `cookies.jar`, because Docker auto-creates missing bind-mount directories as root, and a non-root container cannot write into them. See Troubleshooting below if you hit this after already running the container once.
+
+```
+mkdir -p /path/to/config /path/to/cache
+chown -R 1000:1000 /path/to/config /path/to/cache
+```
+
 ### Docker Run
 
 ```
@@ -90,6 +97,13 @@ docker run -d -p 5800:5800 twitch-drops-miner:latest
 ### Permissions issues on mounted volumes
 
 Make sure the container's user (e.g. uid/gid 1000) has read/write permissions on your mounted directories. Pass `-u <uid>:<gid>` to match your host user, or `chmod -R 777` the mounted directory.
+
+**Symptom to watch for:** the app shows a Twitch login code, you enter it, and the WebUI immediately goes back to "Login required" with no obvious error -- logs (`docker logs twitch-drops-miner`) show `PermissionError: [Errno 13] Permission denied: '/TwitchDropsMiner/config/cookies.jar'`. This happens because Docker auto-creates `/path/to/config` and `/path/to/cache` as root the first time you run the container if they do not already exist, and the app runs as a non-root user. Fix it without losing your setup:
+
+```
+chown -R 1000:1000 /path/to/config /path/to/cache
+docker restart twitch-drops-miner
+```
 
 ### Reverse proxy and WebSocket support
 
