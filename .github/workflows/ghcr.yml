@@ -37,6 +37,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/twitch-drops-miner:latest
+            ghcr.io/nucl3arn30n/twitch-drops-miner:latest
           build-args: |
             UI_BACKEND=nicegui
